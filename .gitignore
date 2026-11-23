@@ -1,0 +1,47 @@
+node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+*.log
+
+# Private source exports and all local review/recovery material
+*.zip
+_chat.txt
+WhatsApp Chat*
+private/
+.private/
+nickname-review.json
+moment-review.json
+day-scene-review.json
+*.invitation
+*.invite-key
+*.recovery.json
+.env
+.env.*
+!.env.example
+
+# Raw chat media must never enter this repository
+*.opus
+*.mov
+*.mp4
+*.webp
+*.jpg
+*.jpeg
+*.png
+!public/art/*.png
+!public/art/*.webp
+!public/art/*.jpg
+!src/**/*.png
+!src/**/*.webp
+
+# Only encrypted archive objects belong under public/sealed
+public/sealed/*
+!public/sealed/.gitkeep
+!public/sealed/envelope.json
+!public/sealed/*.bin
+
+# Local import summary is intentionally untracked
+archive-audit.private.json
+
