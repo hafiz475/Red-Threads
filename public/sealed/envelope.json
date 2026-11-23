@@ -1,0 +1,15 @@
+{
+  "format": "red-threads-sealed",
+  "version": 1,
+  "kdf": {
+    "name": "PBKDF2-HMAC-SHA-256",
+    "iterations": 650000,
+    "pinSalt": "V2tW5g8Rm80yEM7T2H5Z7A",
+    "hkdfSalt": "Su85jMqSQiFUW226SGuo1s9EO0yeOWO8DwlMoxw7uuo",
+    "info": "red-threads/archive/v1"
+  },
+  "manifest": {
+    "path": "sealed/zK_9Nh-6JashX4fp_t_kDA.bin",
+    "aad": "red-threads:v1:manifest"
+  }
+}
