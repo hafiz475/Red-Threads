@@ -43,9 +43,11 @@ function matchesFilter(message: ChatMessage, filter: FilterName, names: Set<stri
 
 export function ConversationReader({ archive, cryptoKey, dayNumber, targetMessageId, animate, onBack, onDay }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number>();
   const day = archive.days[Math.max(0, dayNumber - 1)] ?? archive.days[0];
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<FilterName>('Everything');
+  const [query, setQuery] = useState(() => sessionStorage.getItem('rt-reader-query') ?? '');
+  const [filter, setFilter] = useState<FilterName>(() => (sessionStorage.getItem('rt-reader-filter') as FilterName) || 'Everything');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [favorites, setFavorites] = useState(loadFavorites);
   const [expanded, setExpanded] = useState<string>();
   const [frozenHour, setFrozenHour] = useState<number>();
@@ -65,11 +67,18 @@ export function ConversationReader({ archive, cryptoKey, dayNumber, targetMessag
     const index = messages.findIndex((message) => message.id === targetMessageId);
     if (index >= 0) window.setTimeout(() => rowVirtualizer.scrollToIndex(index, { align: 'center' }), 120);
   }, [targetMessageId, messages, rowVirtualizer]);
+  useEffect(() => { sessionStorage.setItem('rt-reader-query', query); }, [query]);
+  useEffect(() => { sessionStorage.setItem('rt-reader-filter', filter); }, [filter]);
+  useEffect(() => () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); }, []);
   const onScroll = () => {
-    const visible = rowVirtualizer.getVirtualItems();
-    const middle = visible[Math.floor(visible.length / 2)];
-    const message = middle ? messages[middle.index] : undefined;
-    if (message) { setFocusedHour(message.hour); localStorage.setItem('rt-resume-message', message.id); }
+    if (frameRef.current) return;
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = undefined;
+      const visible = rowVirtualizer.getVirtualItems();
+      const middle = visible[Math.floor(visible.length / 2)];
+      const message = middle ? messages[middle.index] : undefined;
+      if (message) { setFocusedHour((current) => current === message.hour ? current : message.hour); localStorage.setItem('rt-resume-message', message.id); }
+    });
   };
   const toggleFavorite = (id: string) => {
     setFavorites((current) => {
@@ -86,24 +95,27 @@ export function ConversationReader({ archive, cryptoKey, dayNumber, targetMessag
       <IllustratedSky phase={phase} scene={day?.scene} animate={animate} />
       <div className="reader-scrim" />
       <header className="reader-header">
-        <button className="back-button" onClick={onBack}><ChevronLeft /> Our universe</button>
+        <button className="back-button" onClick={onBack}><ChevronLeft /> Back</button>
         <div><p className="eyebrow">{query || filter !== 'Everything' ? 'Searching the complete archive' : `Day ${day?.dayNumber}`}</p><h1>{query || filter !== 'Everything' ? 'Our conversation' : dateLabel}</h1></div>
         <div className="day-nav"><button className="icon-button" disabled={!day || day.dayNumber <= 1} onClick={() => onDay(day!.dayNumber - 1)} aria-label="Previous day"><ChevronLeft /></button><button className="icon-button" disabled={!day || day.dayNumber >= archive.days.length} onClick={() => onDay(day!.dayNumber + 1)} aria-label="Next day"><ChevronRight /></button></div>
       </header>
       <section className="reader-tools">
-        <label className="search-box"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search privately in memory" /></label>
+        <button className="mobile-tool-toggle" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search messages" aria-expanded={searchOpen}><Search /></button>
+        <label className={`search-box ${searchOpen ? 'open' : ''}`}><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search privately in memory" /></label>
         <label className="filter-select"><Filter /><select value={filter} onChange={(event) => setFilter(event.target.value as FilterName)}>{filters.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <button className="glass-button small" onClick={() => setReplay(!replay)}>{replay ? <Pause /> : <Play />} {replay ? 'Pause replay' : 'Replay this exchange'}</button>
-        <button className="glass-button small" onClick={() => setFrozenHour(frozenHour === undefined ? focusedHour : undefined)}><Snowflake /> {frozenHour === undefined ? 'Freeze this hour' : 'Follow conversation'}</button>
+        <button className="reader-action" onClick={() => setReplay(!replay)} aria-label={replay ? 'Pause replay' : 'Replay this exchange'}>{replay ? <Pause /> : <Play />}<span>{replay ? 'Pause replay' : 'Replay'}</span></button>
+        <button className={`reader-action ${frozenHour !== undefined ? 'active' : ''}`} onClick={() => setFrozenHour(frozenHour === undefined ? focusedHour : undefined)} aria-label={frozenHour === undefined ? 'Freeze this historical hour' : 'Follow conversation time'}><Snowflake /><span>{frozenHour === undefined ? 'Hold sky' : 'Follow time'}</span></button>
       </section>
       <div ref={parentRef} className={`message-scroll ${replay ? 'replaying' : ''}`} onScroll={onScroll}>
         {!messages.length && <div className="empty-conversation"><Star /><h2>{day?.messageIds.length ? 'No messages match this view' : 'No messages in this export for this day.'}</h2><p>{day?.messageIds.length ? 'Try another filter or search.' : 'Our thread is still here.'}</p></div>}
         <div className="virtual-canvas" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const message = messages[virtualRow.index]!;
+            const previous = messages[virtualRow.index - 1];
+            const grouped = previous?.side === message.side && previous.localDate === message.localDate;
             const media = message.attachment?.mediaId ? archive.media.find((item) => item.id === message.attachment?.mediaId) : undefined;
             return (
-              <article key={message.id} data-index={virtualRow.index} ref={rowVirtualizer.measureElement} className={`message-row ${message.side} ${targetMessageId === message.id ? 'target-message' : ''}`} style={{ transform: `translateY(${virtualRow.start}px)`, '--replay-order': virtualRow.index % 8 } as React.CSSProperties}>
+              <article key={message.id} data-index={virtualRow.index} ref={rowVirtualizer.measureElement} className={`message-row ${message.side} ${grouped ? 'grouped' : 'group-start'} ${targetMessageId === message.id ? 'target-message' : ''}`} style={{ transform: `translateY(${virtualRow.start}px)`, '--replay-order': virtualRow.index % 8 } as React.CSSProperties}>
                 <button className="message-bubble" onClick={() => setExpanded(expanded === message.id ? undefined : message.id)}><span className="message-text">{message.text}</span>{message.attachment?.missing && <span className="missing-attachment">Attachment was not recoverable from this export.</span>}</button>
                 {media && <MediaAsset media={media} cryptoKey={cryptoKey} compact />}
                 {expanded === message.id && <div className="message-details"><span>{message.sender ?? 'System'} · {message.localTime}</span><button onClick={() => toggleFavorite(message.id)}><Bookmark className={favorites.has(message.id) ? 'filled' : ''} /> {favorites.has(message.id) ? 'Saved' : 'Favorite'}</button></div>}

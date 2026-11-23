@@ -15,7 +15,7 @@ export function StoryIntro({ archive, animate, onDay, onHome }: Props) {
   const featuredNames = archive.nicknames.filter((item) => item.featured).slice(0, 7);
   useEffect(() => {
     if (!animate) { setBeat(4); return; }
-    const timers = [2200, 4700, 7600, 10400].map((delay, index) => window.setTimeout(() => setBeat(index + 1), delay));
+    const timers = [280, 760, 1320, 1950].map((delay, index) => window.setTimeout(() => setBeat(index + 1), delay));
     return () => timers.forEach(clearTimeout);
   }, [animate]);
   return (

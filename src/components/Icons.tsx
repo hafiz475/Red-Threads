@@ -23,3 +23,9 @@ export const ChevronLeft = make('arrow'); export function ChevronRight(props: SV
 export const Moon = make(); export const Sun = make('spark'); export const Pause = make(); export const Play = make(); export const LockKeyhole = make(); export const KeyRound = make(); export const FastForward = make('arrow');
 export const History = make(); export const CalendarDays = make(); export const Leaf = make('heart'); export const Crown = make('spark'); export const CloudRain = make(); export const MoonStar = make('spark');
 export const Download = make('arrow'); export const FileQuestion = make(); export const LoaderCircle = make(); export const X = make(); export const Filter = make(); export const Snowflake = make('spark'); export const Bookmark = make('heart');
+
+export function Home(props: SVGProps<SVGSVGElement>) { return <IconBase {...props}><path d="m3 11 9-8 9 8"/><path d="M5.5 9.5V21h13V9.5M9 21v-6h6v6"/></IconBase>; }
+export function Calendar(props: SVGProps<SVGSVGElement>) { return <IconBase {...props}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></IconBase>; }
+export function Chat(props: SVGProps<SVGSVGElement>) { return <IconBase {...props}><path d="M20 15a4 4 0 0 1-4 4H8l-5 3 1.5-5A7.5 7.5 0 0 1 3 12c0-4.4 4-8 9-8s9 3.6 9 8c0 1.1-.3 2.1-1 3Z"/><path d="M8 11h8M8 15h5"/></IconBase>; }
+export function Moments(props: SVGProps<SVGSVGElement>) { return <IconBase {...props}><path d="M4 19c4-7 12-7 16-14M4 19c3-1 5 0 7 2M20 5c-3 1-5 0-7-2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="9" r="2"/></IconBase>; }
+export function More(props: SVGProps<SVGSVGElement>) { return <IconBase {...props}><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></IconBase>; }

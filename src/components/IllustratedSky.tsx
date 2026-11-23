@@ -25,8 +25,16 @@ export function IllustratedSky({ phase = 'night', scene, animate, className = ''
           <filter id={`soft-${seed}`}><feGaussianBlur stdDeviation="16" /></filter>
         </defs>
         <rect width="1200" height="700" fill={`url(#sky-${seed})`} />
-        <circle className="sun-or-moon-glow" cx="880" cy={phase === 'sunset' ? 330 : 150} r="120" fill={`url(#glow-${seed})`} filter={`url(#soft-${seed})`} />
-        <circle className="sun-or-moon" cx="880" cy={phase === 'sunset' ? 330 : 150} r={phase === 'night' ? 44 : 58} />
+        <g className="celestial celestial-sun">
+          <circle className="sun-or-moon-glow" cx="880" cy="180" r="120" fill={`url(#glow-${seed})`} filter={`url(#soft-${seed})`} />
+          <circle className="sun-or-moon sun-disc" cx="880" cy="180" r="58" />
+          <g className="sun-rays">{Array.from({ length: 12 }, (_, index) => <path key={index} d="M880 92V64" transform={`rotate(${index * 30} 880 180)`} />)}</g>
+        </g>
+        <g className="celestial celestial-moon">
+          <circle className="sun-or-moon-glow" cx="930" cy="135" r="110" fill={`url(#glow-${seed})`} filter={`url(#soft-${seed})`} />
+          <path className="moon-crescent" d="M946 88a55 55 0 1 0 36 91 47 47 0 1 1-36-91Z" />
+        </g>
+        <g className="dawn-rays"><path d="M420 510 80 260M505 485 360 80M590 485 730 70M670 510 1080 240" /></g>
         {Array.from({ length: 18 }, (_, index) => (
           <circle key={index} className="star" style={{ '--delay': `${((index * 7 + seed) % 15) / 4}s` } as React.CSSProperties} cx={(index * 173 + seed * 41) % 1180} cy={(index * 83 + seed * 17) % 360} r={(index % 3) + 1.2} />
         ))}
